@@ -43,20 +43,6 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
         
         .math-font { font-family: 'Times New Roman', Times, serif; font-size: 1.1rem; }
-
-
-        .no-print { }
-        @media print {
-            body { background: #fff !important; padding: 0 !important; }
-            .no-print, #toast-container, button, select, input[type="range"] { display: none !important; }
-            .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
-            .rounded-3xl, .rounded-2xl, .rounded-xl { border-radius: 8px !important; }
-            .max-w-\[1400px\] { max-width: 100% !important; }
-            table { page-break-inside: auto; }
-            tr { page-break-inside: avoid; page-break-after: auto; }
-        }
-        .focus-ring:focus { outline: 3px solid rgba(59, 130, 246, .45); outline-offset: 2px; }
-
     </style>
 </head>
 <body class="bg-blue-50 font-sans text-slate-800 min-h-screen p-3 md:p-6 pb-24">
@@ -74,10 +60,6 @@
                 <span class="hidden md:inline-block w-2 h-2 rounded-full bg-blue-300"></span>
                 <span class="text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 uppercase tracking-widest text-sm">T-Physics Pro</span>
             </p>
-        </div>
-
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900 leading-relaxed no-print">
-            <b>Lưu ý:</b> Đây là công cụ mô phỏng chiến thuật xét tuyển. Dữ liệu điểm chuẩn và phổ điểm trong CSDL là dữ liệu tham khảo để so sánh; khi Bộ GDĐT/ĐHQGHN/các trường công bố phổ điểm hoặc đề án 2026 chính thức, hãy cập nhật lại các mảng <code class="bg-white px-1 rounded">baseTableData</code>, <code class="bg-white px-1 rounded">exactHSAPercentiles</code> và <code class="bg-white px-1 rounded">uniDatabase</code> trong file <b>index.html</b>.
         </div>
 
         <!-- ========================================================================= -->
@@ -311,18 +293,12 @@
 
                 <!-- Final Table -->
                 <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex-grow flex flex-col mt-4">
-                    <div class="bg-blue-800 px-6 py-4 text-white flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 border-b-4 border-blue-900">
+                    <div class="bg-blue-800 px-6 py-4 text-white flex justify-between items-center border-b-4 border-blue-900">
                         <div class="font-extrabold text-lg uppercase tracking-wide flex items-center">
                             <svg class="w-6 h-6 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Danh Sách 15 Nguyện Vọng Tối Ưu
                         </div>
-                        <div class="flex flex-wrap items-center gap-2 no-print">
-                            <button onclick="exportCSV()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Xuất CSV</button>
-                            <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">In/PDF</button>
-                            <button onclick="saveProjectState(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Lưu</button>
-                            <button onclick="resetAspirations()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Reset NV</button>
-                            <span id="nvCounter" class="text-sm bg-white text-blue-900 px-4 py-1.5 rounded-full font-black shadow-md border-2 border-blue-300">15/15 NV</span>
-                        </div>
+                        <span id="nvCounter" class="text-sm bg-white text-blue-900 px-4 py-1.5 rounded-full font-black shadow-md border-2 border-blue-300">15/15 NV</span>
                     </div>
                     
                     <div class="p-0 overflow-x-auto flex-grow">
@@ -334,7 +310,6 @@
                                     <th class="px-5 py-4 text-center font-extrabold">NGUỒN ĐXT</th>
                                     <th class="px-5 py-4 text-center font-extrabold">ĐIỂM CHUẨN</th>
                                     <th class="px-5 py-4 text-center font-extrabold">&Delta;E</th>
-                                    <th class="px-5 py-4 text-center font-extrabold">ĐÁNH GIÁ</th>
                                     <th class="px-5 py-4 text-center w-14 font-extrabold">XÓA</th>
                                 </tr>
                             </thead>
@@ -779,15 +754,11 @@
             });
             
             updateMajorSelect();
-
-            // GitHub Pages: nạp lại cấu hình đã lưu, nếu không có thì tự điền 15 NV mẫu
-            const restored = (typeof loadProjectState === 'function') ? loadProjectState() : false;
-            if (!restored) {
-                autoRefill();
-                document.getElementById('thptShift').value = 0;
-            }
-            handleShift();
-            if (restored) showToast('Đã nạp lại cấu hình đã lưu!', 'success');
+            
+            // Tự động điền 15 nguyện vọng ngay từ lúc mở web để trải nghiệm liền mạch
+            autoRefill();
+            resetShift(); 
+            updateAllEngines(false, 'hsa');
         }
 
         function updateMajorSelect() {
@@ -936,7 +907,6 @@
             
             // Render Aspirations
             renderAspirations(playAnimation);
-            if (typeof saveProjectState === 'function') saveProjectState(false);
         }
 
         function renderRefTable(uIdx, lIdx) {
@@ -1240,103 +1210,6 @@
                 `;
                 finalListBody.appendChild(tr);
             });
-        }
-
-
-
-        // ==========================================
-        // GITHUB PAGES: LƯU CẤU HÌNH, XUẤT DỮ LIỆU
-        // ==========================================
-        const STORAGE_KEY = 'tphysics_admission_2026_state_v2';
-
-        function classifyDelta(delta) {
-            if (delta < 0 && delta >= -2.5) return 'Mơ ước';
-            if (delta < -2.5) return 'Bỏ qua';
-            if (delta >= 0 && delta <= 1.5) return 'Vừa đủ';
-            return 'An toàn';
-        }
-
-        function getProcessedListForExport() {
-            return aspirations.map(item => {
-                const scoreUsed = item.method === 'THPT' ? state.finalThpt : state.finalHsa;
-                const delta = scoreUsed - item.cutoff;
-                return { ...item, scoreUsed, delta, category: classifyDelta(delta) };
-            }).sort((a, b) => a.delta - b.delta);
-        }
-
-        function escapeCSV(value) {
-            const text = String(value ?? '');
-            return '"' + text.replace(/"/g, '""') + '"';
-        }
-
-        function exportCSV() {
-            const rows = getProcessedListForExport();
-            const header = ['NV', 'Trường', 'Ngành', 'Phương thức', 'Điểm dùng xét', 'Điểm chuẩn', 'Delta E', 'Đánh giá'];
-            const body = rows.map((item, index) => [
-                index + 1,
-                item.uni,
-                item.major,
-                item.method,
-                item.scoreUsed.toFixed(2),
-                item.cutoff.toFixed(2),
-                item.delta.toFixed(2),
-                item.category
-            ]);
-            const csv = '\ufeff' + [header, ...body].map(row => row.map(escapeCSV).join(',')).join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nguyen-vong-2026.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Đã xuất file CSV!', 'success');
-        }
-
-        function saveProjectState(showNotification = false) {
-            try {
-                const data = {
-                    hsaScore: document.getElementById('hsaScore').value,
-                    hsaPercentile: document.getElementById('hsaPercentile').value,
-                    hsaConvertMethod: document.getElementById('hsaConvertMethod').value,
-                    realThptScore: document.getElementById('realThptScore').value,
-                    priorityScore: document.getElementById('priorityScore').value,
-                    thptShift: document.getElementById('thptShift').value,
-                    aspirations,
-                    counter
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                if (showNotification) showToast('Đã lưu cấu hình trên trình duyệt!', 'success');
-            } catch (error) {
-                if (showNotification) showToast('Không lưu được cấu hình trên trình duyệt này.', 'error');
-            }
-        }
-
-        function loadProjectState() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return false;
-                const data = JSON.parse(raw);
-                ['hsaScore', 'hsaPercentile', 'hsaConvertMethod', 'realThptScore', 'priorityScore', 'thptShift'].forEach(id => {
-                    if (data[id] !== undefined && document.getElementById(id)) document.getElementById(id).value = data[id];
-                });
-                if (Array.isArray(data.aspirations)) aspirations = data.aspirations.slice(0, 15);
-                if (Number.isFinite(Number(data.counter))) counter = Number(data.counter);
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-
-        function resetAspirations() {
-            aspirations = [];
-            counter = 1;
-            autoRefill();
-            updateAllEngines(true, 'other');
-            saveProjectState(false);
-            showToast('Đã tạo lại danh sách 15 nguyện vọng mẫu!', 'success');
         }
 
         window.onload = initDB;
