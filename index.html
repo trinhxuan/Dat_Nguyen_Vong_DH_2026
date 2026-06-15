@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tư Vấn Tuyển Sinh Toàn Diện 2026 - T-Physics Pro</title>
+    <meta name="description" content="Công cụ mô phỏng quy đổi HSA - THPT và sắp xếp chiến thuật 15 nguyện vọng tuyển sinh năm 2026.">
+    <meta name="theme-color" content="#1d4ed8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .pulse-update { animation: pulseUpdate 0.6s ease-out; }
+        @keyframes pulseUpdate {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        .row-bound { border-left: 4px solid #f59e0b !important; background-color: #fef3c7 !important; transition: all 0.3s ease; }
+        
+        .glass-dream { background: rgba(254, 243, 199, 0.9); border: 1px solid rgba(251, 191, 36, 0.6); }
+        .glass-match { background: rgba(219, 234, 254, 0.9); border: 1px solid rgba(96, 165, 250, 0.6); }
+        .glass-safe  { background: rgba(209, 250, 229, 0.9); border: 1px solid rgba(52, 211, 153, 0.6); }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #ffffff; color: #1e293b; padding: 16px 24px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); font-size: 15px; font-weight: 600; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; display: flex; align-items: center; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { border-left: 6px solid #ef4444; }
+        .toast.success { border-left: 6px solid #10b981; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #10b981; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
+        
+        .math-font { font-family: 'Times New Roman', Times, serif; font-size: 1.1rem; }
+
+
+        .no-print { }
+        @media print {
+            body { background: #fff !important; padding: 0 !important; }
+            .no-print, #toast-container, button, select, input[type="range"] { display: none !important; }
+            .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+            .rounded-3xl, .rounded-2xl, .rounded-xl { border-radius: 8px !important; }
+            .max-w-[1400px] { max-width: 100% !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        }
+        .focus-ring:focus { outline: 3px solid rgba(59, 130, 246, .45); outline-offset: 2px; }
+
+    </style>
+</head>
+<body class="bg-blue-50 font-sans text-slate-800 min-h-screen p-3 md:p-6 pb-24">
+
+    <div id="toast-container"></div>
+
+    <div class="max-w-[1400px] mx-auto space-y-8">
+        
+        <!-- HEADER -->
+        <div class="text-center bg-white p-8 rounded-3xl shadow-md border border-blue-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight mb-3 uppercase">Hệ Thống Tuyển Sinh Toàn Diện 2026</h1>
+            <p class="text-slate-600 font-bold text-base md:text-lg flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-3">
+                <span>Tích hợp Quy chế Thông tư 06/2026/TT-BGDĐT</span>
+                <span class="hidden md:inline-block w-2 h-2 rounded-full bg-blue-300"></span>
+                <span class="text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 uppercase tracking-widest text-sm">T-Physics Pro</span>
+            </p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900 leading-relaxed no-print">
+            <b>Lưu ý:</b> Đây là công cụ mô phỏng chiến thuật xét tuyển. Dữ liệu điểm chuẩn trong CSDL là dữ liệu tham khảo để so sánh; khi Bộ GDĐT/ĐHQGHN/các trường công bố phổ điểm hoặc đề án 2026 chính thức, hãy cập nhật lại các mảng <code class="bg-white px-1 rounded">baseTableData</code> và <code class="bg-white px-1 rounded">uniDatabase</code> trong file <b>index.html</b>.
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 1: ĐỘNG CƠ QUY ĐỔI & TỊNH TIẾN PHỔ ĐIỂM -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            
+            <!-- Bảng điều khiển Quy đổi (Col 4) -->
+            <div class="xl:col-span-4 space-y-8">
+                <!-- KHỐI 1.1: TỊNH TIẾN PHỔ ĐIỂM -->
+                <div class="bg-white rounded-3xl shadow-sm border border-emerald-200 overflow-hidden relative">
+                    <div class="bg-emerald-500 px-6 py-4 text-white font-bold flex items-center justify-between">
+                        <div class="flex items-center text-lg">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            Mô phỏng Phổ điểm THPT
+                        </div>
+                        <button onclick="resetShift()" class="text-sm bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition-colors shadow">Reset</button>
+                    </div>
+                    <div class="p-6 bg-emerald-50/50">
+                        <div class="flex justify-between items-end mb-4">
+                            <label class="text-sm font-bold text-emerald-900 uppercase">Độ lệch đề thi</label>
+                            <span id="shiftValueDisplay" class="text-base font-black text-white bg-emerald-600 px-3 py-1 rounded-lg shadow-sm">0.00 đ</span>
+                        </div>
+                        <input type="range" id="thptShift" min="-3.0" max="3.0" step="0.1" value="0" oninput="handleShift()" class="w-full relative z-10 cursor-pointer">
+                        <div class="flex justify-between text-xs text-slate-500 font-bold mt-3 px-1">
+                            <span>Đề Khó (-)</span>
+                            <span class="text-emerald-700">Chuẩn 2025</span>
+                            <span>Đề Dễ (+)</span>
+                        </div>
+                        <div id="shiftDesc" class="mt-4 text-sm text-emerald-800 bg-white p-3 rounded-xl border border-emerald-200 leading-relaxed">
+                            <b>Trạng thái:</b> Giữ nguyên mặt bằng điểm chuẩn như năm 2025.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KHỐI 1.2: HỒ SƠ ĐIỂM KÉP (CỦA THÍ SINH) -->
+                <div class="bg-white rounded-3xl shadow-md border border-blue-200 overflow-hidden relative" id="scorePanel">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+                            <h2 class="font-bold text-blue-900 text-lg uppercase tracking-wide">Hồ Sơ Học Thuật</h2>
+                            <span class="bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                Khóa trần Đ.7.4
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- Điểm Ưu Tiên -->
+                            <div>
+                                <label class="block text-sm font-bold text-rose-700 uppercase mb-2">Điểm Ưu Tiên Gốc (KV+ĐT)</label>
+                                <div class="flex items-center space-x-3">
+                                    <input type="number" id="priorityScore" value="0.25" step="0.25" min="0" max="3" oninput="updateAllEngines()"
+                                        class="block w-full px-4 py-3 text-2xl font-bold border-rose-300 border-2 rounded-xl focus:ring-rose-500 focus:border-rose-500 text-rose-700 bg-rose-50 text-center">
+                                    <span class="text-base font-bold text-rose-600">điểm</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- HSA -->
+                                <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 shadow-sm">
+                                    <label class="block text-sm font-bold text-indigo-800 uppercase text-center mb-2">Điểm HSA 2026</label>
+                                    <input type="number" id="hsaScore" value="98" step="1" oninput="updateAllEngines()"
+                                        class="block w-full px-3 py-2.5 text-3xl font-black border-indigo-300 border-2 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-indigo-700 text-center bg-white">
+                                    <div class="text-center mt-2"><span id="hsaPercentileDisplay" class="text-xs font-bold text-indigo-700 bg-indigo-200 px-2 py-1 rounded-md">Top 8.05%</span></div>
+                                    <div class="mt-4 text-sm text-indigo-900 border-t-2 pt-3 border-indigo-200/50 space-y-1">
+                                        <div class="flex justify-between"><span>Gốc quy đổi:</span> <b id="rawHsaConverted">25.85</b></div>
+                                        <div class="flex justify-between"><span>ĐƯT thực tế:</span> <b id="actPriHsa" class="text-rose-600">+0.14</b></div>
+                                        <div class="mt-2 bg-white p-2 text-center rounded-lg border border-indigo-200 shadow-sm"><b class="text-indigo-800 text-base">ĐXT: <span id="finalHsaScore">25.99</span></b></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- THPT -->
+                                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-sm">
+                                    <label class="block text-sm font-bold text-emerald-800 uppercase text-center mb-2">Thi THPT (Gốc)</label>
+                                    <input type="number" id="realThptScore" value="26.00" step="0.25" oninput="updateAllEngines()"
+                                        class="block w-full px-3 py-2.5 text-3xl font-black border-emerald-300 border-2 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 text-emerald-700 text-center bg-white">
+                                    <div class="text-center mt-2"><span class="text-xs font-bold text-emerald-700 bg-emerald-200 px-2 py-1 rounded-md">Điểm thực tế</span></div>
+                                    <div class="mt-4 text-sm text-emerald-900 border-t-2 pt-3 border-emerald-200/50 space-y-1">
+                                        <div class="flex justify-between"><span>Điểm gốc:</span> <b id="rawThptDisplay">26.00</b></div>
+                                        <div class="flex justify-between"><span>ĐƯT thực tế:</span> <b id="actPriThpt" class="text-rose-600">+0.13</b></div>
+                                        <div class="mt-2 bg-white p-2 text-center rounded-lg border border-emerald-200 shadow-sm"><b class="text-emerald-800 text-base">ĐXT: <span id="finalThptScore">26.13</span></b></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng Quy đổi & MathJax (Col 8) -->
+            <div class="xl:col-span-8 flex flex-col space-y-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-blue-200 overflow-hidden flex flex-col flex-grow">
+                    <div class="bg-blue-600 px-6 py-4 text-white font-bold flex items-center justify-between">
+                        <div class="flex items-center text-lg">
+                            <svg class="w-6 h-6 mr-2 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Khung Quy Đổi Điểm (Bảng nội suy động)
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row h-full">
+                        <!-- Table -->
+                        <div class="w-full md:w-1/2 overflow-y-auto max-h-[400px] border-r border-slate-200">
+                            <table class="w-full text-base text-left text-slate-700 relative">
+                                <thead class="text-sm text-slate-600 uppercase bg-slate-100 border-b-2 border-slate-200 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="px-4 py-4 text-center font-bold border-r border-slate-200 w-24 bg-slate-100">TỐP %</th>
+                                        <th class="px-4 py-4 text-center border-r border-slate-200 bg-slate-100">Điểm HSA</th>
+                                        <th class="px-4 py-4 text-center text-emerald-700 bg-slate-100">Điểm THPT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="refTableBody">
+                                    <!-- JS Render Table -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- MathJax Formula (SÁNG SỦA, KHÔNG MÀU ĐEN) -->
+                        <div class="w-full md:w-1/2 bg-blue-50 p-6 text-slate-800 math-font flex flex-col justify-center relative shadow-inner overflow-x-auto border-l border-blue-100">
+                            <div class="absolute top-0 right-0 bg-amber-400 text-amber-900 text-xs px-3 py-1 rounded-bl-xl font-bold shadow-sm">Mô phỏng Toán học</div>
+                            
+                            <p class="text-blue-800 mb-3 font-bold font-sans text-sm uppercase tracking-wider border-b-2 border-blue-200 pb-2">Công thức nội suy (Bộ GDĐT):</p>
+                            <div id="math-base" class="my-3 text-slate-800 overflow-x-auto overflow-y-hidden text-lg"></div>
+                            
+                            <p class="text-emerald-800 mb-3 font-bold font-sans text-sm uppercase tracking-wider border-b-2 border-emerald-200 pb-2 mt-6">Trạng thái thay số thực tế:</p>
+                            <div id="math-sub" class="my-3 text-slate-800 overflow-x-auto overflow-y-hidden text-lg"></div>
+                            
+                            <div id="math-final" class="mt-6 border-t-2 border-slate-300 pt-4 text-indigo-800 font-black text-xl text-center bg-white p-3 rounded-xl shadow-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 2: CHIẾN THUẬT NGUYỆN VỌNG -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 mt-10">
+            
+            <!-- Form Chọn Nguyện Vọng (Col 4) -->
+            <div class="xl:col-span-4 space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <h2 class="font-extrabold text-blue-900 mb-5 border-b-2 border-slate-100 pb-3 text-lg uppercase tracking-wide">Nạp Nguyện Vọng Mới</h2>
+                    
+                    <div class="mb-5 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-inner">
+                        <label class="block text-sm font-bold text-blue-900 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                            Tra cứu CSDL tham khảo (UET, HUS, HMU, HAUI, HNUE, NEU, HUST)
+                        </label>
+                        <select id="dbSelect" onchange="loadFromDB()" class="w-full text-sm font-semibold px-3 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 cursor-pointer bg-white">
+                            <option value="">-- Chọn ngành từ CSDL Đầy đủ --</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Tên Trường / Đại học</label>
+                            <input type="text" id="inputUni" placeholder="Nhập tên trường..." class="w-full text-base px-4 py-3 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Tên Ngành học</label>
+                            <input type="text" id="inputMajor" placeholder="Nhập tên ngành..." class="w-full text-base px-4 py-3 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-medium">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Điểm chuẩn cũ</label>
+                                <input type="number" id="inputCutoff" placeholder="25.00" step="0.01" class="w-full text-lg px-4 py-3 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Phương thức xét</label>
+                                <select id="inputMethod" class="w-full text-sm font-bold px-3 py-3.5 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white text-slate-800">
+                                    <option value="HSA">HSA (Quy đổi)</option>
+                                    <option value="THPT">THPT (Thực tế)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row gap-3 pt-3">
+                            <button onclick="addAspiration()" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors text-sm uppercase tracking-wide flex justify-center items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Thêm vào phễu
+                            </button>
+                            <button onclick="autoFillTactical(false)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors text-sm uppercase tracking-wide flex justify-center items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Tự Động Điền
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng Kanban & Result (Col 8) -->
+            <div class="xl:col-span-8 flex flex-col space-y-6">
+                
+                <!-- Hướng dẫn -->
+                <div class="bg-indigo-50 rounded-2xl p-5 border border-indigo-200 flex flex-col lg:flex-row lg:items-center justify-between shadow-sm space-y-4 lg:space-y-0">
+                    <div>
+                        <h3 class="font-extrabold text-indigo-900 text-base mb-2 uppercase tracking-wide">Chiến thuật đặt nguyện vọng</h3>
+                        <p class="text-sm text-indigo-800 font-bold flex flex-wrap items-center gap-1">
+                            <span>$\Delta E =$ [</span>
+                            <span class="bg-blue-600 text-white px-2 py-0.5 rounded-md shadow-sm">ĐXT HSA</span>
+                            <span>hoặc</span>
+                            <span class="bg-emerald-600 text-white px-2 py-0.5 rounded-md shadow-sm">ĐXT THPT</span>
+                            <span>] &minus; Điểm Chuẩn</span>
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-3 text-sm font-bold text-slate-700 bg-white p-3 rounded-xl border border-indigo-100 shadow-sm">
+                        <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-amber-400 mr-2 border-2 border-amber-500"></span> Mơ ước (&lt; 0)</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-blue-400 mr-2 border-2 border-blue-500"></span> Vừa đủ (0 - 1.5)</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-emerald-400 mr-2 border-2 border-emerald-500"></span> An toàn (&gt; 1.5)</div>
+                    </div>
+                </div>
+
+                <!-- Kanban -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="flex flex-col bg-amber-50 rounded-2xl border-2 border-amber-200 p-3 min-h-[300px] shadow-sm">
+                        <div class="bg-amber-500 text-white font-extrabold text-center py-3 rounded-xl mb-3 shadow-md text-sm uppercase tracking-wider">Mơ Ước</div>
+                        <div id="colDream" class="space-y-3 overflow-y-auto px-1 pb-2"></div>
+                    </div>
+                    <div class="flex flex-col bg-blue-50 rounded-2xl border-2 border-blue-200 p-3 min-h-[300px] shadow-sm">
+                        <div class="bg-blue-500 text-white font-extrabold text-center py-3 rounded-xl mb-3 shadow-md text-sm uppercase tracking-wider">Vừa Đủ</div>
+                        <div id="colMatch" class="space-y-3 overflow-y-auto px-1 pb-2"></div>
+                    </div>
+                    <div class="flex flex-col bg-emerald-50 rounded-2xl border-2 border-emerald-200 p-3 min-h-[300px] shadow-sm">
+                        <div class="bg-emerald-500 text-white font-extrabold text-center py-3 rounded-xl mb-3 shadow-md text-sm uppercase tracking-wider">An Toàn</div>
+                        <div id="colSafe" class="space-y-3 overflow-y-auto px-1 pb-2"></div>
+                    </div>
+                </div>
+
+                <!-- Final Table -->
+                <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex-grow flex flex-col mt-4">
+                    <div class="bg-blue-800 px-6 py-4 text-white flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 border-b-4 border-blue-900">
+                        <div class="font-extrabold text-lg uppercase tracking-wide flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Danh Sách 15 Nguyện Vọng Tối Ưu
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 no-print">
+                            <button onclick="exportCSV()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Xuất CSV</button>
+                            <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">In/PDF</button>
+                            <button onclick="saveProjectState(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Lưu</button>
+                            <button onclick="resetAspirations()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-lg text-xs font-extrabold uppercase transition-colors">Reset NV</button>
+                            <span id="nvCounter" class="text-sm bg-white text-blue-900 px-4 py-1.5 rounded-full font-black shadow-md border-2 border-blue-300">15/15 NV</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-0 overflow-x-auto flex-grow">
+                        <table class="w-full text-base text-left text-slate-700 min-w-[900px]">
+                            <thead class="text-sm text-slate-600 uppercase bg-slate-100 border-b-2 border-slate-200">
+                                <tr>
+                                    <th class="px-5 py-4 text-center w-14 font-extrabold">NV</th>
+                                    <th class="px-5 py-4 font-extrabold">TRƯỜNG / NGÀNH</th>
+                                    <th class="px-5 py-4 text-center font-extrabold">NGUỒN ĐXT</th>
+                                    <th class="px-5 py-4 text-center font-extrabold">ĐIỂM CHUẨN</th>
+                                    <th class="px-5 py-4 text-center font-extrabold">&Delta;E</th>
+                                    <th class="px-5 py-4 text-center font-extrabold">ĐÁNH GIÁ</th>
+                                    <th class="px-5 py-4 text-center w-14 font-extrabold">XÓA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finalListBody">
+                                <!-- JS Renders -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // UTILS
+        // ==========================================
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'error' 
+                ? `<svg class="w-6 h-6 mr-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                : `<svg class="w-6 h-6 mr-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // ==========================================
+        // 1. DỮ LIỆU ĐIỂM (BỘ GD&ĐT & ĐHQGHN)
+        // ==========================================
+        const exactHSAPercentiles = {
+            114: 0.52, 113: 0.68, 112: 0.81, 111: 1.01, 110: 1.27, 109: 1.56, 108: 1.87, 107: 2.22,
+            106: 2.63, 105: 3.10, 104: 3.60, 103: 4.08, 102: 4.71, 101: 5.50, 100: 6.21, 99: 7.08,
+            98: 8.05, 97: 9.02, 96: 10.15, 95: 11.31, 94: 12.75, 93: 14.02, 92: 15.53, 91: 17.02,
+            90: 18.55, 89: 20.34, 88: 22.19, 87: 24.23, 86: 26.28, 85: 28.30, 84: 30.45, 83: 32.64,
+            82: 35.12, 81: 37.65, 80: 40.26, 79: 42.91, 78: 45.52, 77: 48.21, 76: 51.01
+        };
+
+        const baseTableData = [
+            { pct: 0.01, hsa: 132, thpt: 29.50, label: "TỐP 3" }, 
+            { pct: 0.52, hsa: 114, thpt: 29.00, label: "0.52%" }, 
+            { pct: 1.01, hsa: 111, thpt: 28.11, label: "1.01%" },
+            { pct: 2.22, hsa: 107, thpt: 27.54, label: "2.22%" }, 
+            { pct: 5.50, hsa: 101, thpt: 26.49, label: "5.50%" }, 
+            { pct: 8.05, hsa: 98,  thpt: 25.85, label: "8.05%" },
+            { pct: 10.15,hsa: 96,  thpt: 25.41, label: "10.15%" }, 
+            { pct: 20.34,hsa: 89,  thpt: 23.57, label: "20.34%" }, 
+            { pct: 30.45,hsa: 84,  thpt: 22.07, label: "30.45%" },
+            { pct: 51.01,hsa: 76,  thpt: 19.54, label: "51.01%" }
+        ];
+
+        let currentTableData = [];
+        
+        let state = {
+            shift: 0,
+            rawHsaConverted: 0,
+            rawThpt: 0,
+            priorityBase: 0,
+            finalHsa: 0,
+            finalThpt: 0
+        };
+
+        function calcDynamicPriority(baseScore, maxPriority) {
+            if (baseScore >= 22.50) {
+                let p = ((30 - baseScore) / 7.50) * maxPriority;
+                return Math.max(0, p);
+            }
+            return maxPriority;
+        }
+
+        // ==========================================
+        // 2. CSDL ĐẠI HỌC KHỔNG LỒ (6 TRƯỜNG ĐẦY ĐỦ)
+        // ==========================================
+        const uniDatabase = [
+            {
+                uniName: "ĐH Công nghệ (UET)", method: "HSA", 
+                majors: [
+                    { code: 'CN1', name: 'Công nghệ thông tin', score: 28.19 },
+                    { code: 'CN2', name: 'Kỹ thuật máy tính', score: 27.00 },
+                    { code: 'CN3', name: 'Vật lý kỹ thuật', score: 25.20 },
+                    { code: 'CN4', name: 'Cơ kỹ thuật', score: 26.15 },
+                    { code: 'CN5', name: 'Công nghệ kỹ thuật xây dựng', score: 22.25 },
+                    { code: 'CN6', name: 'Công nghệ kỹ thuật cơ - điện tử', score: 26.73 },
+                    { code: 'CN7', name: 'Công nghệ hàng không vũ trụ', score: 23.96 },
+                    { code: 'CN8', name: 'Khoa học máy tính', score: 27.86 },
+                    { code: 'CN9', name: 'Công nghệ KT điện tử - viễn thông', score: 26.63 },
+                    { code: 'CN10', name: 'Công nghệ nông nghiệp', score: 22.00 },
+                    { code: 'CN11', name: 'Kỹ thuật điều khiển và tự động hoá', score: 27.90 },
+                    { code: 'CN12', name: 'Trí tuệ nhân tạo', score: 27.75 },
+                    { code: 'CN13', name: 'Kỹ thuật năng lượng', score: 24.87 },
+                    { code: 'CN14', name: 'Hệ thống thông tin', score: 26.38 },
+                    { code: 'CN15', name: 'Mạng máy tính và truyền thông dữ liệu', score: 26.73 },
+                    { code: 'CN17', name: 'Kỹ thuật Robot', score: 26.00 },
+                    { code: 'CN18', name: 'Thiết kế công nghiệp và Đồ họa', score: 24.20 },
+                    { code: 'CN19', name: 'Công nghệ vật liệu', score: 25.60 },
+                    { code: 'CN20', name: 'Khoa học dữ liệu', score: 27.38 },
+                    { code: 'CN21', name: 'Công nghệ sinh học', score: 22.13 }
+                ]
+            },
+            {
+                uniName: "ĐH Khoa học Tự nhiên (HUS)", method: "HSA",
+                majors: [
+                    { code: 'QHT01', name: 'Toán học', score: 25.90 },
+                    { code: 'QHT02', name: 'Toán tin', score: 25.50 },
+                    { code: 'QHT98', name: 'Khoa học máy tính và thông tin', score: 25.35 },
+                    { code: 'QHT93', name: 'Khoa học dữ liệu', score: 26.00 },
+                    { code: 'QHT03', name: 'Vật lý học', score: 24.65 },
+                    { code: 'QHT04', name: 'Khoa học vật liệu', score: 24.20 },
+                    { code: 'QHT99', name: 'Công nghệ bán dẫn', score: 25.55 },
+                    { code: 'QHT05', name: 'Công nghệ kỹ thuật hạt nhân', score: 23.50 },
+                    { code: 'QHT06', name: 'Hóa học', score: 23.90 },
+                    { code: 'QHT08', name: 'Sinh học', score: 20.05 },
+                    { code: 'QHT09', name: 'Công nghệ sinh học', score: 22.05 },
+                    { code: 'QHT10', name: 'Địa lý tự nhiên', score: 23.95 },
+                    { code: 'QHT13', name: 'Khoa học môi trường', score: 21.25 }
+                ]
+            },
+            {
+                uniName: "ĐH Y Hà Nội (HMU)", method: "THPT",
+                majors: [
+                    { code: '7720101', name: 'Y khoa', score: 28.13 },
+                    { code: '7720115', name: 'Y học cổ truyền', score: 23.50 },
+                    { code: '7720501', name: 'Răng-Hàm-Mặt', score: 27.34 },
+                    { code: '7720110', name: 'Y học dự phòng', score: 17.00 },
+                    { code: '7720301', name: 'Điều dưỡng CTTT', score: 22.25 },
+                    { code: '7720302', name: 'Hộ sinh', score: 20.35 },
+                    { code: '7720401', name: 'Dinh dưỡng', score: 18.75 },
+                    { code: '7720502', name: 'Kỹ thuật phục hình răng', score: 21.85 },
+                    { code: '7720601', name: 'Kỹ thuật xét nghiệm y học', score: 23.72 },
+                    { code: '7720602', name: 'Kỹ thuật hình ảnh y học', score: 23.57 },
+                    { code: '7720603', name: 'Kỹ thuật phục hồi chức năng', score: 22.50 },
+                    { code: '7720609', name: 'Khúc xạ nhãn khoa', score: 23.23 },
+                    { code: '7720701', name: 'Y tế công cộng', score: 18.20 },
+                    { code: '7310401', name: 'Tâm lý học', score: 26.70 }
+                ]
+            },
+            {
+                uniName: "ĐH Công nghiệp HN (HAUI)", method: "THPT",
+                majors: [
+                    { code: '7210404', name: 'Thiết kế thời trang', score: 20.75 },
+                    { code: '7220201', name: 'Ngôn ngữ Anh', score: 21.35 },
+                    { code: '7220204', name: 'Ngôn ngữ Trung Quốc', score: 23.00 },
+                    { code: '7220204LK', name: 'Ngôn ngữ Trung Quốc (LKQT)', score: 22.50 },
+                    { code: '7220209', name: 'Ngôn ngữ Nhật', score: 20.00 },
+                    { code: '7220210', name: 'Ngôn ngữ Hàn Quốc', score: 21.50 },
+                    { code: '7229020', name: 'Ngôn ngữ học', score: 20.00 },
+                    { code: '7310612', name: 'Trung Quốc học', score: 21.55 },
+                    { code: '7310104', name: 'Kinh tế đầu tư', score: 21.25 },
+                    { code: '7340101', name: 'Quản trị kinh doanh', score: 20.25 },
+                    { code: '73401012', name: 'Phân tích dữ liệu kinh doanh', score: 20.00 },
+                    { code: '7340115', name: 'Marketing', score: 22.50 },
+                    { code: '7340201', name: 'Tài chính - Ngân hàng', score: 20.75 },
+                    { code: '7340301', name: 'Kế toán', score: 20.00 },
+                    { code: '7340301TA', name: 'Kế toán (CTĐT TA)', score: 20.25 },
+                    { code: '7340302', name: 'Kiểm toán', score: 20.00 },
+                    { code: '7340404', name: 'Quản trị nhân lực', score: 21.25 },
+                    { code: '7340406', name: 'Quản trị văn phòng', score: 20.00 },
+                    { code: '7480101', name: 'Khoa học máy tính', score: 23.72 },
+                    { code: '7480101TA', name: 'Khoa học máy tính (CTĐT TA)', score: 20.45 },
+                    { code: '7480102', name: 'Mạng máy tính và truyền thông dữ liệu', score: 21.70 },
+                    { code: '7480103', name: 'Kỹ thuật phần mềm', score: 21.75 },
+                    { code: '7480104', name: 'Hệ thống thông tin', score: 21.10 },
+                    { code: '7480108', name: 'Công nghệ kỹ thuật máy tính', score: 21.85 },
+                    { code: '7480201', name: 'Công nghệ thông tin', score: 23.09 },
+                    { code: '74802012', name: 'Công nghệ đa phương tiện', score: 22.25 },
+                    { code: '74802021', name: 'An toàn thông tin', score: 23.43 },
+                    { code: '7510201', name: 'Công nghệ kỹ thuật cơ khí', score: 23.72 },
+                    { code: '7510201TA', name: 'Công nghệ kỹ thuật cơ khí (CTĐT TA)', score: 20.45 },
+                    { code: '75102012', name: 'Công nghệ kỹ thuật khuôn mẫu', score: 22.50 },
+                    { code: '75102013', name: 'Thiết kế cơ khí và kiểu dáng CN', score: 21.35 },
+                    { code: '7510203', name: 'Công nghệ kỹ thuật cơ điện tử', score: 25.17 },
+                    { code: '75102032', name: 'Robot và trí tuệ nhân tạo', score: 24.30 },
+                    { code: '75102033', name: 'Công nghệ kỹ thuật cơ điện tử ô tô', score: 23.93 },
+                    { code: '7510205', name: 'Công nghệ kỹ thuật ô tô', score: 22.50 },
+                    { code: '7510205TA', name: 'Công nghệ kỹ thuật ô tô (CTĐT TA)', score: 20.00 },
+                    { code: '7510206', name: 'Công nghệ kỹ thuật nhiệt', score: 21.85 },
+                    { code: '7510301', name: 'Công nghệ kỹ thuật điện, điện tử', score: 23.93 },
+                    { code: '7510301TA', name: 'CN kỹ thuật điện, điện tử (CTĐT TA)', score: 20.10 },
+                    { code: '75190071', name: 'Năng lượng tái tạo', score: 20.75 },
+                    { code: '7510302', name: 'Công nghệ kỹ thuật điện tử - viễn thông', score: 22.75 },
+                    { code: '7510302TA', name: 'CN KT điện tử - viễn thông (CTĐT TA)', score: 20.00 },
+                    { code: '75103021', name: 'Công nghệ kỹ thuật điện tử y sinh', score: 20.60 },
+                    { code: '7510303', name: 'CN KT điều khiển và tự động hóa', score: 26.27 },
+                    { code: '75103031', name: 'Kỹ thuật sản xuất thông minh', score: 22.50 },
+                    { code: '7510401', name: 'Công nghệ kỹ thuật hoá học', score: 20.25 },
+                    { code: '7510406', name: 'Công nghệ kỹ thuật môi trường', score: 18.75 },
+                    { code: '7510605', name: 'Logistics và quản lý chuỗi cung ứng', score: 22.76 },
+                    { code: '7520116', name: 'Kỹ thuật cơ khí động lực', score: 22.50 },
+                    { code: '7520118', name: 'Kỹ thuật hệ thống công nghiệp', score: 21.75 },
+                    { code: '7540101', name: 'Công nghệ thực phẩm', score: 20.60 },
+                    { code: '7540203', name: 'Công nghệ vật liệu dệt, may', score: 18.25 },
+                    { code: '7540204', name: 'Công nghệ dệt, may', score: 18.00 },
+                    { code: '7720203', name: 'Hóa dược', score: 21.35 },
+                    { code: '7810101', name: 'Du lịch', score: 21.85 },
+                    { code: '7810101TA', name: 'Du lịch (CTĐT TA)', score: 18.00 },
+                    { code: '7810103', name: 'Quản trị dịch vụ du lịch và lữ hành', score: 22.25 },
+                    { code: '7810103TA', name: 'Quản trị DV du lịch và lữ hành (CTĐT TA)', score: 18.10 },
+                    { code: '7810201', name: 'Quản trị khách sạn', score: 21.75 },
+                    { code: '7810201TA', name: 'Quản trị khách sạn (CTĐT TA)', score: 18.25 },
+                    { code: '7810202', name: 'Quản trị nhà hàng và dịch vụ ăn uống', score: 20.85 },
+                    { code: '7810202TA', name: 'Quản trị nhà hàng và DV ăn uống (CTĐT TA)', score: 18.60 }
+                ]
+            },
+            {
+                uniName: "ĐH Sư phạm Hà Nội (HNUE)", method: "THPT",
+                majors: [
+                    { code: '7140114', name: 'Quản lí giáo dục', score: 24.68 },
+                    { code: '7140201', name: 'GD Mầm non', score: 22.25 },
+                    { code: '7140201K', name: 'GD Mầm non - SP Tiếng Anh', score: 21.63 },
+                    { code: '7140202', name: 'GD Tiểu học', score: 25.17 },
+                    { code: '7140202K', name: 'GD Tiểu học - SP Tiếng Anh', score: 24.99 },
+                    { code: '7140203', name: 'GD đặc biệt', score: 27.55 },
+                    { code: '7140204', name: 'GD công dân', score: 27.74 },
+                    { code: '7140205', name: 'GD chính trị', score: 28.22 },
+                    { code: '7140206', name: 'GD thể chất', score: 25.89 },
+                    { code: '7140208', name: 'GD Quốc phòng và An ninh', score: 27.27 },
+                    { code: '7140209', name: 'SP Toán học', score: 28.27 },
+                    { code: '7140209K', name: 'SP Toán (dạy bằng Tiếng Anh)', score: 28.36 },
+                    { code: '7140210', name: 'SP Tin học', score: 24.83 },
+                    { code: '7140211', name: 'SP Vật lí', score: 28.31 },
+                    { code: '7140211K', name: 'SP Vật lí (dạy bằng Tiếng Anh)', score: 27.78 },
+                    { code: '7140212', name: 'SP Hoá học', score: 28.42 },
+                    { code: '7140212K', name: 'SP Hoá học (dạy bằng Tiếng Anh)', score: 26.13 },
+                    { code: '7140213', name: 'SP Sinh học', score: 26.27 },
+                    { code: '7140217', name: 'SP Ngữ văn', score: 28.48 },
+                    { code: '7140218', name: 'SP Lịch sử', score: 29.06 },
+                    { code: '7140219', name: 'SP Địa lí', score: 28.79 },
+                    { code: '7140221', name: 'SP Âm nhạc', score: 23.75 },
+                    { code: '7140222', name: 'SP Mỹ thuật', score: 23.48 },
+                    { code: '7140231', name: 'SP Tiếng Anh', score: 26.30 },
+                    { code: '7140233', name: 'SP Tiếng Pháp', score: 27.15 },
+                    { code: '7140246', name: 'SP Công nghệ', score: 21.75 },
+                    { code: '7140247', name: 'SP Khoa học tự nhiên', score: 27.06 },
+                    { code: '7140249', name: 'SP Lịch sử - Địa lí', score: 28.60 },
+                    { code: '7220101', name: 'Tiếng Việt và văn hóa Việt Nam', score: 26.36 },
+                    { code: '7220201', name: 'Ngôn ngữ Anh', score: 24.56 },
+                    { code: '7220204', name: 'Ngôn ngữ Trung Quốc', score: 26.76 },
+                    { code: '7229001', name: 'Triết học', score: 24.87 },
+                    { code: '7229010', name: 'Lịch sử', score: 27.75 },
+                    { code: '7229030', name: 'Văn học', score: 27.64 },
+                    { code: '7310201', name: 'Chính trị học', score: 25.19 },
+                    { code: '7310301', name: 'Xã hội học', score: 26.00 },
+                    { code: '7310401', name: 'Tâm lý học', score: 23.25 },
+                    { code: '7310403', name: 'Tâm lý học giáo dục', score: 23.96 },
+                    { code: '7310630', name: 'Việt Nam học', score: 20.00 },
+                    { code: '7420101', name: 'Sinh học', score: 19.00 },
+                    { code: '7420201', name: 'Công nghệ sinh học', score: 19.25 },
+                    { code: '7440102', name: 'Vật lí học (Bán dẫn & kỹ thuật)', score: 22.35 },
+                    { code: '7440112', name: 'Hóa học', score: 23.00 },
+                    { code: '7460101', name: 'Toán học', score: 25.47 },
+                    { code: '7480201', name: 'Công nghệ thông tin', score: 20.60 },
+                    { code: '7760101', name: 'Công tác xã hội', score: 26.13 },
+                    { code: '7760103', name: 'Hỗ trợ giáo dục người khuyết tật', score: 25.29 },
+                    { code: '7810103', name: 'Quản trị dịch vụ du lịch và lữ hành', score: 20.25 }
+                ]
+            },
+            {
+                uniName: "ĐH Kinh tế Quốc dân (NEU)", method: "THPT",
+                majors: [
+                    { code: '7480202', name: 'An toàn thông tin', score: 25.59 },
+                    { code: '7340204', name: 'Bảo hiểm', score: 24.75 },
+                    { code: '7340116', name: 'Bất động sản', score: 25.41 },
+                    { code: 'EP09', name: 'Công nghệ tài chính (BFT)', score: 26.29 },
+                    { code: '7480201', name: 'Công nghệ thông tin', score: 25.89 },
+                    { code: 'EP02', name: 'Định phí Bảo hiểm & QTRR (Actuary)', score: 25.50 },
+                    { code: '7480104', name: 'Hệ thống thông tin', score: 26.38 },
+                    { code: '7340405', name: 'Hệ thống thông tin quản lý', score: 27.50 },
+                    { code: '7340301', name: 'Kế toán', score: 27.10 },
+                    { code: 'EP04', name: 'Kế toán THCCQT (ICAEW CFAB)', score: 25.90 },
+                    { code: 'EP15', name: 'Khoa học dữ liệu', score: 26.13 },
+                    { code: '7480101', name: 'Khoa học máy tính', score: 26.27 },
+                    { code: '7340401', name: 'Khoa học quản lý', score: 26.06 },
+                    { code: 'EP01', name: 'Khởi nghiệp và PTKD (BBAE)', score: 24.92 },
+                    { code: '7340302', name: 'Kiểm toán', score: 28.38 },
+                    { code: 'EP12', name: 'Kiểm toán THCCQT (ICAEW CFAB)', score: 27.25 },
+                    { code: '7620114', name: 'Kinh doanh nông nghiệp', score: 23.75 },
+                    { code: '7340120', name: 'Kinh doanh quốc tế', score: 28.60 },
+                    { code: 'EP05', name: 'Kinh doanh số (E-BDB)', score: 26.40 },
+                    { code: '7340121', name: 'Kinh doanh thương mại', score: 28.00 },
+                    { code: '7310104', name: 'Kinh tế đầu tư', score: 27.50 },
+                    { code: '7310101_1', name: 'Kinh tế học', score: 26.52 },
+                    { code: 'EP13', name: 'Kinh tế học tài chính (FE)', score: 25.41 },
+                    { code: '7620115', name: 'Kinh tế nông nghiệp', score: 24.35 },
+                    { code: '7310105', name: 'Kinh tế phát triển', score: 26.77 },
+                    { code: '7310106', name: 'Kinh tế quốc tế', score: 28.13 },
+                    { code: '7850102', name: 'Kinh tế tài nguyên thiên nhiên', score: 23.50 },
+                    { code: '7310101_2', name: 'Kinh tế và quản lý đô thị', score: 25.80 },
+                    { code: '7310101_3', name: 'Kinh tế và QL nguồn nhân lực', score: 26.79 },
+                    { code: 'EP17', name: 'Kỹ thuật phần mềm', score: 24.70 },
+                    { code: '7510605', name: 'Logistics và QL chuỗi cung ứng', score: 28.61 },
+                    { code: 'EP14', name: 'Logistics và QLCCƯ THCCQT (LSIC)', score: 27.69 },
+                    { code: '7380101', name: 'Luật', score: 25.96 },
+                    { code: 'POHE4', name: 'Luật kinh doanh', score: 25.50 },
+                    { code: '7380107', name: 'Luật kinh tế', score: 26.75 },
+                    { code: '7380109', name: 'Luật thương mại quốc tế', score: 26.44 },
+                    { code: '7340115', name: 'Marketing', score: 28.12 },
+                    { code: '7220201', name: 'Ngôn ngữ Anh', score: 26.51 },
+                    { code: 'CLC1', name: 'Nhóm ngành Chất lượng cao CLC1', score: 25.25 },
+                    { code: 'CLC2', name: 'Nhóm ngành Chất lượng cao CLC2', score: 26.50 },
+                    { code: 'CLC3', name: 'Nhóm ngành Chất lượng cao CLC3', score: 26.42 },
+                    { code: 'TT1', name: 'Nhóm ngành CT Tiên tiến TT1', score: 24.75 },
+                    { code: 'TT2', name: 'Nhóm ngành CT Tiên tiến TT2', score: 25.50 },
+                    { code: 'EP03', name: 'Phân tích dữ liệu kinh tế (EDA)', score: 26.78 },
+                    { code: 'EP06', name: 'Phân tích kinh doanh (BA)', score: 27.50 },
+                    { code: '7320108', name: 'Quan hệ công chúng', score: 28.07 },
+                    { code: '7340408', name: 'Quan hệ lao động', score: 25.00 },
+                    { code: '7340403', name: 'Quản lý công', score: 25.42 },
+                    { code: 'EPMP', name: 'Quản lý công và chính sách (E-PMP)', score: 23.00 },
+                    { code: '7850103', name: 'Quản lý đất đai', score: 24.38 },
+                    { code: '7340409', name: 'Quản lý dự án', score: 26.63 },
+                    { code: '7850101', name: 'Quản lý tài nguyên và môi trường', score: 24.17 },
+                    { code: 'POHE6', name: 'Quản lý thị trường', score: 24.66 },
+                    { code: 'EP08', name: 'Quản trị chất lượng và Đổi mới (E-MQI)', score: 24.20 },
+                    { code: '7810103', name: 'Quản trị DV du lịch và lữ hành', score: 26.06 },
+                    { code: 'EP07', name: 'Quản trị điều hành thông minh (E-SOM)', score: 25.10 },
+                    { code: 'EP18', name: 'Quản trị giải trí và sự kiện', score: 25.89 },
+                    { code: '7810201', name: 'Quản trị khách sạn', score: 26.25 },
+                    { code: 'POHE1', name: 'Quản trị khách sạn (POHE)', score: 25.61 },
+                    { code: 'EP11', name: 'Quản trị khách sạn quốc tế (IHME)', score: 24.25 },
+                    { code: '7340101', name: 'Quản trị kinh doanh', score: 27.10 },
+                    { code: 'EBBA', name: 'Quản trị kinh doanh (E-BBA)', score: 25.64 },
+                    { code: 'POHE5', name: 'Quản trị kinh doanh thương mại', score: 26.29 },
+                    { code: 'POHE2', name: 'Quản trị lữ hành', score: 24.64 },
+                    { code: '7340404', name: 'Quản trị nhân lực', score: 27.10 },
+                    { code: '7340201', name: 'Tài chính – Ngân hàng', score: 27.34 },
+                    { code: 'EP10', name: 'Tài chính và Đầu tư (BFI)', score: 26.27 },
+                    { code: 'POHE7', name: 'Thẩm định giá', score: 24.55 },
+                    { code: '7310107', name: 'Thống kê kinh tế', score: 26.79 },
+                    { code: '7340122', name: 'Thương mại điện tử', score: 28.83 },
+                    { code: '7310108', name: 'Toán kinh tế', score: 26.73 },
+                    { code: 'EP16', name: 'Trí tuệ nhân tạo', score: 25.44 },
+                    { code: 'POHE3', name: 'Truyền thông Marketing', score: 27.61 }
+                ]
+            },
+            {
+                uniName: "ĐH Bách khoa Hà Nội (HUST)", method: "THPT",
+                majors: [
+                    { code: 'IT-E10', name: 'KHDL & TTNT (CTTT)', score: 29.39 },
+                    { code: 'IT1', name: 'CNTT: Khoa học Máy tính', score: 29.19 },
+                    { code: 'IT2', name: 'CNTT: Kỹ thuật Máy tính', score: 28.83 },
+                    { code: 'IT-E15', name: 'Cyber Security (CTTT)', score: 28.69 },
+                    { code: 'IT-E7', name: 'CNTT (Global ICT)', score: 28.66 },
+                    { code: 'EE2', name: 'KT Điều khiển - Tự động hoá', score: 28.48 },
+                    { code: 'MS2', name: 'KT Vi điện tử và Công nghệ nano', score: 28.25 },
+                    { code: 'EE-E8', name: 'KT Điều khiển - Tự động hoá (CTTT)', score: 28.12 },
+                    { code: 'ET1', name: 'Kỹ thuật Điện tử - Viễn thông', score: 28.07 },
+                    { code: 'IT-E6', name: 'CNTT (Việt - Nhật)', score: 27.97 },
+                    { code: 'ME1', name: 'Kỹ thuật Cơ điện tử', score: 27.90 },
+                    { code: 'ET-E9', name: 'Hệ thống nhúng và IoT (CTTT)', score: 27.85 },
+                    { code: 'IT-EP', name: 'CNTT (Việt - Pháp)', score: 27.83 },
+                    { code: 'MI1', name: 'Toán - Tin', score: 27.80 },
+                    { code: 'MI2', name: 'Hệ thống thông tin quản lý', score: 27.72 },
+                    { code: 'EE1', name: 'Kỹ thuật Điện', score: 27.55 },
+                    { code: 'ET-E4', name: 'KT Điện tử - Viễn thông (CTTT)', score: 27.55 },
+                    { code: 'EE-EP', name: 'Tin học CN và Tự động hóa (PFIEV)', score: 27.27 },
+                    { code: 'TE1', name: 'Kỹ thuật Ô tô', score: 27.03 },
+                    { code: 'ME-E1', name: 'Kỹ thuật Cơ điện tử (CTTT)', score: 26.74 },
+                    { code: 'ET-E16', name: 'Truyền thông số & KT đa phương tiện (CTTT)', score: 26.62 },
+                    { code: 'ME2', name: 'Kỹ thuật Cơ khí', score: 26.62 },
+                    { code: 'TE3', name: 'Kỹ thuật Hàng không', score: 26.60 },
+                    { code: 'EE-E18', name: 'Hệ thống điện và năng lượng tái tạo (CTTT)', score: 26.56 },
+                    { code: 'ET-LUH', name: 'Điện tử - Viễn thông (HTQT Đức)', score: 26.55 },
+                    { code: 'PH1', name: 'Vật lý kỹ thuật', score: 26.41 },
+                    { code: 'ET2', name: 'Kỹ thuật Y sinh', score: 26.32 },
+                    { code: 'TE2', name: 'Kỹ thuật Cơ khí động lực', score: 26.25 },
+                    { code: 'ME-LUH', name: 'Cơ điện tử (HTQT Đức)', score: 26.19 },
+                    { code: 'TE-EP', name: 'Cơ khí hàng không (PFIEV)', score: 25.84 },
+                    { code: 'ME-NUT', name: 'Cơ điện tử (HTQT Nhật Bản)', score: 25.68 },
+                    { code: 'ET-E5', name: 'Kỹ thuật Y sinh (CTTT)', score: 25.58 },
+                    { code: 'HE1', name: 'Kỹ thuật Nhiệt', score: 25.47 },
+                    { code: 'MS1', name: 'Kỹ thuật Vật liệu', score: 25.39 },
+                    { code: 'PH3', name: 'Vật lý Y khoa', score: 25.20 },
+                    { code: 'TE-E2', name: 'Kỹ thuật Ô tô (CTTT)', score: 25.18 },
+                    { code: 'MS3', name: 'Công nghệ vật liệu Polyme và Compozit', score: 25.16 },
+                    { code: 'PH2', name: 'Kỹ thuật Hạt nhân', score: 25.07 },
+                    { code: 'ME-GU', name: 'Cơ khí - Chế tạo máy (HTQT Úc)', score: 25.00 },
+                    { code: 'MS5', name: 'Kỹ thuật in', score: 24.06 },
+                    { code: 'CH1', name: 'Kỹ thuật Hoá học', score: 24.05 },
+                    { code: 'MS-E3', name: 'Khoa học và kỹ thuật vật liệu (CTTT)', score: 23.70 },
+                    { code: 'BF2', name: 'Kỹ thuật Thực phẩm', score: 23.38 },
+                    { code: 'CH2', name: 'Hoá học', score: 23.19 },
+                    { code: 'BF1', name: 'Kỹ thuật Sinh học', score: 23.02 },
+                    { code: 'TX1', name: 'Công nghệ Dệt - May', score: 22.48 },
+                    { code: 'EV1', name: 'Kỹ thuật Môi trường', score: 22.22 },
+                    { code: 'EV2', name: 'Quản lý Tài nguyên và Môi trường', score: 21.53 },
+                    { code: 'CH-E11', name: 'Kỹ thuật Hóa dược (CTTT)', score: 21.38 },
+                    { code: 'BF-E12', name: 'Kỹ thuật Thực phẩm (CTTT)', score: 21.00 },
+                    { code: 'BF-E19', name: 'Kỹ thuật sinh học (CTTT)', score: 20.00 },
+                    { code: 'FL3', name: 'Tiếng Trung KHKT và Công nghệ', score: 24.86 },
+                    { code: 'EM3', name: 'Quản trị kinh doanh', score: 24.30 },
+                    { code: 'EM5', name: 'Tài chính - Ngân hàng', score: 24.30 },
+                    { code: 'FL1', name: 'Tiếng Anh KHKT và Công nghệ', score: 24.30 },
+                    { code: 'FL2', name: 'Tiếng Anh chuyên nghiệp quốc tế', score: 24.30 },
+                    { code: 'EM4', name: 'Kế toán', score: 24.13 },
+                    { code: 'EM2', name: 'Quản lý công nghiệp', score: 23.90 },
+                    { code: 'EM-E14', name: 'Logistics và QL chuỗi cung ứng (CTTT)', score: 23.71 },
+                    { code: 'EM1', name: 'Quản lý năng lượng', score: 23.70 },
+                    { code: 'ED2', name: 'Công nghệ giáo dục', score: 23.30 },
+                    { code: 'ED3', name: 'Quản lý giáo dục', score: 23.20 },
+                    { code: 'EM-E13', name: 'Phân tích kinh doanh (CTTT)', score: 23.06 },
+                    { code: 'TROY-IT', name: 'Khoa học máy tính (HTQT Hoa Kỳ)', score: 21.30 },
+                    { code: 'TROY-BA', name: 'Quản trị kinh doanh (HTQT Hoa Kỳ)', score: 19.00 }
+                ]
+            }
+        ];
+
+        // Khởi đầu trống rỗng (Sẽ được Auto-fill ngay lúc khởi tạo)
+        let aspirations = [];
+        let counter = 1;
+
+        // ==========================================
+        // 3. LOGIC HỆ THỐNG
+        // ==========================================
+        function initDB() {
+            const select = document.getElementById('dbSelect');
+            uniDatabase.forEach((uni, uniIndex) => {
+                let optgroup = document.createElement('optgroup');
+                optgroup.label = uni.uniName;
+                uni.majors.forEach((major, majorIndex) => {
+                    let option = document.createElement('option');
+                    option.value = `${uniIndex}_${majorIndex}`;
+                    option.text = `[${major.score.toFixed(2)}] ${major.name} (${major.code})`;
+                    optgroup.appendChild(option);
+                });
+                select.appendChild(optgroup);
+            });
+            
+            // Tự động điền hoặc nạp lại cấu hình đã lưu để chạy tốt trên GitHub Pages
+            bootApp(); 
+        }
+
+        function resetShift() {
+            document.getElementById('thptShift').value = 0;
+            handleShift();
+        }
+
+        function handleShift() {
+            state.shift = parseFloat(document.getElementById('thptShift').value);
+            const display = document.getElementById('shiftValueDisplay');
+            const desc = document.getElementById('shiftDesc');
+            
+            if (state.shift > 0) {
+                display.innerText = `+${state.shift.toFixed(2)} đ`;
+                display.className = "text-base font-black text-white bg-blue-500 px-3 py-1 rounded-lg shadow-sm";
+                desc.innerHTML = `<b>Kịch bản Đề Dễ (+):</b> Cùng một mức HSA, điểm chuẩn THPT sẽ bị lạm phát (tăng lên ${state.shift.toFixed(2)} đ) so với 2025.`;
+                desc.className = "mt-4 text-sm text-blue-800 bg-blue-50 p-3 rounded-xl border border-blue-200 leading-relaxed";
+            } else if (state.shift < 0) {
+                display.innerText = `${state.shift.toFixed(2)} đ`;
+                display.className = "text-base font-black text-white bg-rose-500 px-3 py-1 rounded-lg shadow-sm";
+                desc.innerHTML = `<b>Kịch bản Đề Khó (-):</b> Phổ điểm lùi về trái. Điểm chuẩn THPT giảm ${Math.abs(state.shift).toFixed(2)} đ so với 2025.`;
+                desc.className = "mt-4 text-sm text-rose-800 bg-rose-50 p-3 rounded-xl border border-rose-200 leading-relaxed";
+            } else {
+                display.innerText = `0.00 đ`;
+                display.className = "text-base font-black text-white bg-emerald-600 px-3 py-1 rounded-lg shadow-sm";
+                desc.innerHTML = `<b>Trạng thái Cơ sở:</b> Giữ nguyên mặt bằng điểm chuẩn như năm 2025.`;
+                desc.className = "mt-4 text-sm text-emerald-800 bg-white p-3 rounded-xl border border-emerald-200 leading-relaxed";
+            }
+            
+            // Re-calc base table
+            currentTableData = JSON.parse(JSON.stringify(baseTableData));
+            currentTableData.forEach(row => { row.thpt = Math.min(30, row.thpt + state.shift); });
+            
+            updateAllEngines(false);
+        }
+
+        function updateAllEngines(playAnimation = true) {
+            const hsaInput = parseFloat(document.getElementById('hsaScore').value) || 0;
+            const thptInput = parseFloat(document.getElementById('realThptScore').value) || 0;
+            state.priorityBase = parseFloat(document.getElementById('priorityScore').value) || 0;
+            state.rawThpt = thptInput;
+
+            const pctDisplay = document.getElementById('hsaPercentileDisplay');
+            if (exactHSAPercentiles[hsaInput]) pctDisplay.innerText = "Top " + exactHSAPercentiles[hsaInput] + "%";
+            else pctDisplay.innerText = "Ngoài bảng";
+
+            // Calc HSA converted using currentTableData
+            let uIdx = 0, lIdx = currentTableData.length - 1;
+            if (hsaInput >= currentTableData[0].hsa) { uIdx = 0; lIdx = 1; }
+            else if (hsaInput <= currentTableData[currentTableData.length - 1].hsa) { uIdx = currentTableData.length - 2; lIdx = currentTableData.length - 1; }
+            else {
+                for (let i = 0; i < currentTableData.length - 1; i++) {
+                    if (hsaInput <= currentTableData[i].hsa && hsaInput >= currentTableData[i+1].hsa) {
+                        uIdx = i; lIdx = i + 1; break;
+                    }
+                }
+            }
+
+            const x_u = currentTableData[uIdx].hsa, a_u = currentTableData[uIdx].thpt;
+            const x_l = currentTableData[lIdx].hsa, a_l = currentTableData[lIdx].thpt;
+            
+            if (x_u === x_l) state.rawHsaConverted = a_l;
+            else state.rawHsaConverted = a_l + ((hsaInput - x_l) / (x_u - x_l)) * (a_u - a_l);
+
+            // Calc Priorities
+            const actPriHsa = calcDynamicPriority(state.rawHsaConverted, state.priorityBase);
+            const actPriThpt = calcDynamicPriority(state.rawThpt, state.priorityBase);
+
+            state.finalHsa = Math.min(30.00, state.rawHsaConverted + actPriHsa);
+            state.finalThpt = Math.min(30.00, state.rawThpt + actPriThpt);
+
+            // Update UI Scores
+            document.getElementById('rawHsaConverted').innerText = state.rawHsaConverted.toFixed(2);
+            document.getElementById('actPriHsa').innerText = `+${actPriHsa.toFixed(2)}`;
+            document.getElementById('finalHsaScore').innerText = state.finalHsa.toFixed(2);
+
+            document.getElementById('rawThptDisplay').innerText = state.rawThpt.toFixed(2);
+            document.getElementById('actPriThpt').innerText = `+${actPriThpt.toFixed(2)}`;
+            document.getElementById('finalThptScore').innerText = state.finalThpt.toFixed(2);
+
+            if(playAnimation) {
+                const box = document.getElementById('scorePanel');
+                box.classList.remove('pulse-update');
+                void box.offsetWidth; box.classList.add('pulse-update');
+            }
+
+            // Render Table Ref & MathJax
+            renderRefTable(uIdx, lIdx);
+            renderMathJax(hsaInput, x_u, a_u, x_l, a_l, state.rawHsaConverted);
+            
+            // Render Aspirations
+            renderAspirations(playAnimation);
+            saveProjectState(false);
+        }
+
+        function renderRefTable(uIdx, lIdx) {
+            const tbody = document.getElementById('refTableBody');
+            tbody.innerHTML = '';
+            currentTableData.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b-2 border-slate-100 transition-colors";
+                if(idx === uIdx || idx === lIdx) tr.classList.add('row-bound');
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-center font-bold border-r-2 border-slate-100 ${idx===0?'text-rose-600 bg-rose-50':'text-slate-700'}">${row.label}</td>
+                    <td class="px-4 py-3 border-r-2 border-slate-100 text-center font-bold text-blue-700 text-lg">${row.hsa}</td>
+                    <td class="px-4 py-3 text-center font-bold text-emerald-700 text-lg">${row.thpt.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMathJax(hsa, xu, au, xl, al, result) {
+            const f_base = `$$T_{A00} = A_{i} + \\frac{T_{HSA} - X_{i}}{X_{i-1} - X_{i}} \\times (A_{i-1} - A_{i})$$`;
+            const f_sub = `$$y = ${al.toFixed(2)} + \\frac{${hsa} - ${xl}}{${xu} - ${xl}} \\times (${au.toFixed(2)} - ${al.toFixed(2)})$$`;
+            // Sử dụng \text{} để tránh lỗi biên dịch tiếng Việt của MathJax
+            const f_final = `$$\\Rightarrow \\text{Điểm Gốc} = \\mathbf{${result.toFixed(2)}}$$`;
+
+            document.getElementById('math-base').innerHTML = f_base;
+            document.getElementById('math-sub').innerHTML = f_sub;
+            document.getElementById('math-final').innerHTML = f_final;
+
+            if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                const mathNodes = [
+                    document.getElementById('math-base'),
+                    document.getElementById('math-sub'),
+                    document.getElementById('math-final')
+                ];
+                if (typeof window.MathJax.typesetClear === 'function') window.MathJax.typesetClear(mathNodes);
+                window.MathJax.typesetPromise(mathNodes).catch(err => console.log(err));
+            }
+        }
+
+        // ==========================================
+        // QUẢN LÝ NGUYỆN VỌNG & AUTO-FILL
+        // ==========================================
+        function loadFromDB() {
+            const select = document.getElementById('dbSelect');
+            if (select.value !== "") {
+                const indices = select.value.split('_');
+                const uniData = uniDatabase[indices[0]];
+                const majorData = uniData.majors[indices[1]];
+                
+                document.getElementById('inputUni').value = uniData.uniName;
+                document.getElementById('inputMajor').value = `${majorData.name} (${majorData.code})`;
+                document.getElementById('inputCutoff').value = majorData.score.toFixed(2);
+                document.getElementById('inputMethod').value = uniData.method;
+            }
+        }
+
+        function addAspiration() {
+            if(aspirations.length >= 15) {
+                showToast("Điều 14.3: Tối đa 15 nguyện vọng!", "error");
+                return;
+            }
+
+            const uni = document.getElementById('inputUni').value.trim();
+            const major = document.getElementById('inputMajor').value.trim();
+            const cutoff = parseFloat(document.getElementById('inputCutoff').value);
+            const method = document.getElementById('inputMethod').value;
+
+            if (!uni || !major || isNaN(cutoff)) {
+                showToast("Vui lòng điền đủ Tên trường, Ngành và Điểm!", "error");
+                return;
+            }
+
+            aspirations.push({ id: counter++, uni: uni, major: major, cutoff: cutoff, method: method });
+            document.getElementById('dbSelect').value = '';
+            
+            updateAllEngines(true);
+            showToast("Thêm NV thành công!", "success");
+        }
+
+        function removeAspiration(id) {
+            // Xóa phần tử theo ID
+            aspirations = aspirations.filter(item => item.id !== id);
+            
+            // Ngay lập tức tự động bù đắp 1 nguyện vọng khác để duy trì 15 NV
+            let oldLength = aspirations.length;
+            autoRefill();
+            let addedCount = aspirations.length - oldLength;
+
+            updateAllEngines(true);
+            
+            if (addedCount > 0) {
+                showToast("Đã xóa và tự động bổ sung 1 nguyện vọng khác thay thế!", "success");
+            } else {
+                showToast("Đã xóa nguyện vọng!", "success");
+            }
+        }
+
+        // Hàm lõi thực hiện tự động bơm đầy 15 nguyện vọng
+        function autoRefill() {
+            let slotsNeeded = 15 - aspirations.length;
+            if (slotsNeeded <= 0) return;
+
+            let availableMajors = [];
+
+            // Gom toàn bộ ngành từ Database
+            uniDatabase.forEach(uni => {
+                uni.majors.forEach(major => {
+                    availableMajors.push({
+                        uni: uni.uniName,
+                        method: uni.method,
+                        major: `${major.name} (${major.code})`,
+                        cutoff: major.score
+                    });
+                });
+            });
+
+            // Trộn ngẫu nhiên danh sách để chọn đa dạng mỗi khi điền
+            availableMajors.sort(() => Math.random() - 0.5);
+
+            let addedCount = 0;
+            for (let i = 0; i < availableMajors.length; i++) {
+                if (addedCount >= slotsNeeded) break;
+
+                let candidate = availableMajors[i];
+
+                // Kiểm tra xem đã có trong rổ chưa
+                let exists = aspirations.some(a => a.major === candidate.major && a.uni === candidate.uni);
+                if (exists) continue;
+
+                // TRÁNH LỖI QUY CHẾ: Nếu dùng thuật toán tự động bù đến mức độ bão hòa (15 NV), 
+                // khả năng cao ngành Sư phạm sẽ bị đẩy xuống NV6+. Nên ta sẽ NÉ Sư Phạm khi tự động điền.
+                if (candidate.uni.includes("Sư phạm")) continue;
+
+                aspirations.push({
+                    id: counter++,
+                    uni: candidate.uni,
+                    major: candidate.major,
+                    cutoff: candidate.cutoff,
+                    method: candidate.method
+                });
+                addedCount++;
+            }
+        }
+
+        function autoFillTactical(showNotification = true) {
+            if (aspirations.length >= 15) {
+                if (showNotification) showToast("Đã đủ 15 nguyện vọng, không cần tự động điền thêm!", "error");
+                return;
+            }
+
+            let oldLength = aspirations.length;
+            autoRefill();
+            let addedCount = aspirations.length - oldLength;
+
+            updateAllEngines(true);
+            if (showNotification) {
+                showToast(`Đã tự động bổ sung ${addedCount} nguyện vọng chiến thuật vào phễu!`, "success");
+            }
+        }
+
+        function createCardHTML(item, delta, typeClass, textColor) {
+            let sign = delta > 0 ? '+' : '';
+            let methodBadge = item.method === 'THPT' 
+                ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-1 rounded-md border border-emerald-300">THPT (${item.scoreUsed.toFixed(2)})</span>`
+                : `<span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2 py-1 rounded-md border border-blue-300">HSA (${item.scoreUsed.toFixed(2)})</span>`;
+
+            return `
+                <div class="${typeClass} rounded-2xl p-4 shadow-sm fade-in relative group transition-all duration-300 transform hover:scale-[1.02]">
+                    <div class="absolute top-2 right-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-500 bg-white rounded-full p-1 shadow-sm" onclick="removeAspiration(${item.id})">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
+                    <h4 class="font-extrabold text-slate-900 text-sm leading-tight mb-2 pr-6">${item.major}</h4>
+                    <p class="text-[11px] font-bold text-slate-600 mb-4 border-b border-slate-200/50 pb-2">${item.uni}</p>
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col gap-1.5">
+                            ${methodBadge}
+                            <p class="font-mono text-xs font-bold text-slate-700 bg-white/50 px-2 py-1 rounded w-max">Chuẩn cũ: ${item.cutoff.toFixed(2)}</p>
+                        </div>
+                        <div class="text-right flex flex-col justify-end bg-white/60 px-3 py-1.5 rounded-lg border border-white/50 shadow-sm">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">&Delta;E</p>
+                            <p class="font-mono text-lg font-black ${textColor}">${sign}${delta.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAspirations(animate = false) {
+            const colDream = document.getElementById('colDream');
+            const colMatch = document.getElementById('colMatch');
+            const colSafe = document.getElementById('colSafe');
+            const finalListBody = document.getElementById('finalListBody');
+            
+            colDream.innerHTML = ''; colMatch.innerHTML = ''; colSafe.innerHTML = ''; finalListBody.innerHTML = '';
+
+            const nvCounter = document.getElementById('nvCounter');
+            nvCounter.innerText = `${aspirations.length}/15 NV`;
+            if (aspirations.length === 15) { 
+                nvCounter.className = "text-sm bg-rose-600 px-4 py-1.5 rounded-full text-white font-black shadow-md border-2 border-rose-700"; 
+            } else { 
+                nvCounter.className = "text-sm bg-white text-blue-900 px-4 py-1.5 rounded-full font-black shadow-md border-2 border-blue-300"; 
+            }
+
+            if (aspirations.length === 0) return;
+
+            let processedList = aspirations.map(item => {
+                let scoreToCompare = item.method === 'THPT' ? state.finalThpt : state.finalHsa;
+                let delta = scoreToCompare - item.cutoff;
+                
+                let category = ''; let typeClass = ''; let textColor = ''; let badgeHTML = '';
+
+                if (delta < 0 && delta >= -2.5) {
+                    category = 'Mơ ước'; typeClass = 'glass-dream'; textColor = 'text-amber-600';
+                    badgeHTML = '<span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-300 whitespace-nowrap">Mơ ước</span>';
+                } else if (delta < -2.5) {
+                     category = 'Quá khó'; typeClass = 'bg-slate-100 border border-slate-300 opacity-70'; textColor = 'text-slate-600';
+                     badgeHTML = '<span class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-400 whitespace-nowrap">Bỏ qua</span>';
+                } else if (delta >= 0 && delta <= 1.5) {
+                    category = 'Vừa đủ'; typeClass = 'glass-match'; textColor = 'text-blue-600';
+                    badgeHTML = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 whitespace-nowrap">Vừa đủ</span>';
+                } else {
+                    category = 'An toàn'; typeClass = 'glass-safe'; textColor = 'text-emerald-600';
+                    badgeHTML = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 whitespace-nowrap">An toàn</span>';
+                }
+                return { ...item, delta, scoreUsed: scoreToCompare, category, typeClass, textColor, badgeHTML };
+            });
+
+            // SẮP XẾP: Delta tăng dần
+            processedList.sort((a, b) => a.delta - b.delta);
+
+            processedList.forEach(item => {
+                const card = createCardHTML(item, item.delta, item.typeClass, item.textColor);
+                if (item.category === 'Mơ ước' || item.category === 'Quá khó') colDream.innerHTML += card;
+                else if (item.category === 'Vừa đủ') colMatch.innerHTML += card;
+                else colSafe.innerHTML += card;
+            });
+
+            processedList.forEach((item, index) => {
+                let currentRank = index + 1;
+                let sign = item.delta > 0 ? '+' : '';
+                let animClass = animate ? 'fade-in' : '';
+                
+                let warning = '';
+                if (item.uni.includes("Sư phạm") && currentRank > 5) {
+                    warning = `<p class="text-[11px] text-rose-700 mt-2 font-bold bg-rose-100 px-2 py-1 inline-block rounded-md border border-rose-300">Lỗi Quy chế: SP chỉ xét NV 1-5</p>`;
+                } else if (item.delta < -2.5) {
+                    warning = `<p class="text-[11px] text-amber-600 mt-2 font-bold bg-amber-50 px-2 py-1 inline-block rounded-md border border-amber-200">Lệch quá lớn, dễ tốn NV</p>`;
+                }
+
+                let sourceBadge = item.method === 'THPT' 
+                    ? `<span class="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-extrabold border-2 border-emerald-200 whitespace-nowrap">THPT (${item.scoreUsed.toFixed(2)})</span>`
+                    : `<span class="bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg text-xs font-extrabold border-2 border-blue-200 whitespace-nowrap">HSA (${item.scoreUsed.toFixed(2)})</span>`;
+
+                let tr = document.createElement('tr');
+                tr.className = `border-b-2 border-slate-100 hover:bg-blue-50/50 transition-colors ${animClass} ${warning.includes('Lỗi') ? 'bg-rose-50/50' : 'bg-white'}`;
+                tr.innerHTML = `
+                    <td class="px-5 py-4 text-center">
+                        <div class="w-8 h-8 rounded-full ${warning.includes('Lỗi') ? 'bg-rose-600' : 'bg-blue-800'} text-white font-black text-sm flex items-center justify-center mx-auto shadow-md">${currentRank}</div>
+                    </td>
+                    <td class="px-5 py-4">
+                        <div class="font-extrabold text-slate-900 text-sm">${item.major}</div>
+                        <div class="text-xs text-slate-500 mt-1 font-medium">${item.uni}</div>
+                        ${warning}
+                    </td>
+                    <td class="px-5 py-4 text-center">${sourceBadge}</td>
+                    <td class="px-5 py-4 text-center font-mono text-base font-bold text-slate-700">${item.cutoff.toFixed(2)}</td>
+                    <td class="px-5 py-4 text-center font-mono text-lg font-black ${item.textColor}">${sign}${item.delta.toFixed(2)}</td>
+                    <td class="px-5 py-4 text-center">${item.badgeHTML}</td>
+                    <td class="px-5 py-4 text-center">
+                        <button onclick="removeAspiration(${item.id})" class="text-slate-400 hover:text-rose-600 hover:bg-rose-100 p-2 rounded-full transition-colors">
+                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                finalListBody.appendChild(tr);
+            });
+        }
+
+
+
+        // ==========================================
+        // GITHUB PAGES: LƯU CẤU HÌNH, XUẤT DỮ LIỆU
+        // ==========================================
+        const STORAGE_KEY = 'tphysics_admission_2026_state_v1';
+
+        function classifyDelta(delta) {
+            if (delta < 0 && delta >= -2.5) return 'Mơ ước';
+            if (delta < -2.5) return 'Bỏ qua';
+            if (delta >= 0 && delta <= 1.5) return 'Vừa đủ';
+            return 'An toàn';
+        }
+
+        function getProcessedListForExport() {
+            return aspirations.map(item => {
+                const scoreUsed = item.method === 'THPT' ? state.finalThpt : state.finalHsa;
+                const delta = scoreUsed - item.cutoff;
+                return { ...item, scoreUsed, delta, category: classifyDelta(delta) };
+            }).sort((a, b) => a.delta - b.delta);
+        }
+
+        function escapeCSV(value) {
+            const text = String(value ?? '');
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+
+        function exportCSV() {
+            const rows = getProcessedListForExport();
+            const header = ['NV', 'Trường', 'Ngành', 'Phương thức', 'Điểm dùng xét', 'Điểm chuẩn', 'Delta E', 'Đánh giá'];
+            const body = rows.map((item, index) => [
+                index + 1,
+                item.uni,
+                item.major,
+                item.method,
+                item.scoreUsed.toFixed(2),
+                item.cutoff.toFixed(2),
+                item.delta.toFixed(2),
+                item.category
+            ]);
+            const csv = '\ufeff' + [header, ...body].map(row => row.map(escapeCSV).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nguyen-vong-2026.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Đã xuất file CSV!', 'success');
+        }
+
+        function saveProjectState(showNotification = false) {
+            try {
+                const data = {
+                    hsaScore: document.getElementById('hsaScore').value,
+                    realThptScore: document.getElementById('realThptScore').value,
+                    priorityScore: document.getElementById('priorityScore').value,
+                    thptShift: document.getElementById('thptShift').value,
+                    aspirations,
+                    counter
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                if (showNotification) showToast('Đã lưu cấu hình trên trình duyệt!', 'success');
+            } catch (error) {
+                if (showNotification) showToast('Không lưu được cấu hình trên trình duyệt này.', 'error');
+            }
+        }
+
+        function loadProjectState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                ['hsaScore', 'realThptScore', 'priorityScore', 'thptShift'].forEach(id => {
+                    if (data[id] !== undefined && document.getElementById(id)) document.getElementById(id).value = data[id];
+                });
+                if (Array.isArray(data.aspirations)) aspirations = data.aspirations.slice(0, 15);
+                if (Number.isFinite(Number(data.counter))) counter = Number(data.counter);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function resetAspirations() {
+            aspirations = [];
+            counter = 1;
+            autoRefill();
+            updateAllEngines(true);
+            saveProjectState(false);
+            showToast('Đã tạo lại danh sách 15 nguyện vọng mẫu!', 'success');
+        }
+
+        function bootApp() {
+            const restored = loadProjectState();
+            if (!restored || aspirations.length < 15) autoRefill();
+            handleShift();
+            if (restored) showToast('Đã nạp lại cấu hình đã lưu!', 'success');
+        }
+
+        window.onload = initDB;
+    </script>
+</body>
+</html>
